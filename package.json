@@ -7,6 +7,7 @@
   "engines": { "node": ">=22.18" },
   "scripts": {
     "start": "node apps/mosaic-core/main.ts",
+    "dev": "node apps/dev-health/server.ts",
     "test": "node --test \"tests/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
