@@ -1,0 +1,8 @@
+{
+  "environment": "development",
+  "featureFlags": {},
+  "timeouts": { "defaultMs": 10000, "shutdownMs": 5000 },
+  "retry": { "maxAttempts": 3, "baseDelayMs": 200, "maxDelayMs": 5000 },
+  "resourceLimits": { "maxConcurrentTasks": 4 },
+  "secretRefs": {}
+}

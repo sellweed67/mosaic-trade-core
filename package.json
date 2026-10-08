@@ -1,0 +1,14 @@
+{
+  "name": "mosaic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mosaic — backend/core AI orchestration and universal integration system.",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "start": "node apps/mosaic-core/main.ts",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": { "typescript": "^5.9.0", "@types/node": "^22.0.0" }
+}
