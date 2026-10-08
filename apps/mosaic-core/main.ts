@@ -12,6 +12,8 @@ try {
     const r = await lifecycle.stop();
     process.exit(r.clean ? 0 : 1);
   }
+  // Keep the headless process alive until a shutdown signal arrives.
+  setInterval(() => {}, 1 << 30);
 } catch (e) {
   createLogger().error("mosaic failed to start", { error: toMosaicError(e) });
   process.exit(1);
