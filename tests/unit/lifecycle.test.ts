@@ -36,13 +36,13 @@ test("startup failure rolls back started modules in reverse and enters failed", 
 });
 test("startup timeout fails safely", async () => {
   const ev: string[] = [];
-  const lc = new Lifecycle([tracked(ev, "foundation"), tracked(ev, "data", ["foundation"], { init: () => sleep(1000) })], testCtx(testConfig({ timeouts: { defaultMs: 50, startupMs: 30, shutdownMs: 100 } })));
+  const lc = new Lifecycle([tracked(ev, "foundation"), tracked(ev, "data", ["foundation"], { init: async () => { await sleep(1000); } })], testCtx(testConfig({ timeouts: { defaultMs: 50, startupMs: 30, shutdownMs: 100 } })));
   await assert.rejects(lc.start(), (e: any) => e.code === "lifecycle.startup_timeout" && e.category === "timeout");
   assert.deepEqual(ev, ["init:foundation", "stop:foundation"]);
 });
 test("shutdown budget: hung module times out, others still stop, report is unclean", async () => {
   const ev: string[] = [];
-  const lc = new Lifecycle([tracked(ev, "foundation"), tracked(ev, "data", ["foundation"], { stop: () => sleep(1000) })], testCtx(testConfig({ timeouts: { defaultMs: 50, startupMs: 50, shutdownMs: 40 } })));
+  const lc = new Lifecycle([tracked(ev, "foundation"), tracked(ev, "data", ["foundation"], { stop: async () => { await sleep(1000); } })], testCtx(testConfig({ timeouts: { defaultMs: 50, startupMs: 50, shutdownMs: 40 } })));
   await lc.start();
   const t0 = Date.now(); const r = await lc.stop();
   assert.ok(Date.now() - t0 < 500);
