@@ -33,7 +33,7 @@ export function validateConfig(raw: unknown, environment: Environment): MosaicCo
         if (typeof v !== "string" || !/^(env|vault):\/\//.test(v)) throw new Error(`Invalid secret ref at ${p}`);
         continue;
       }
-      if (SECRET_KEY_PATTERN.test(k)) throw new Error(`Inline secret-like key "${p}" not allowed in configuration; use secretRefs.`);
+      if (p !== "$.secretRefs" && SECRET_KEY_PATTERN.test(k)) throw new Error(`Inline secret-like key "${p}" not allowed in configuration; use secretRefs.`);
       walk(v, p);
     }
   };
