@@ -7,5 +7,6 @@ export * from "./foundation/logging.ts";
 export * from "./foundation/health.ts";
 export * from "./foundation/modules.ts";
 export * from "./foundation/lifecycle.ts";
+export * from "./foundation/signals.ts";
 export * from "./foundation/bootstrap.ts";
 export * from "./foundation/version.ts";
