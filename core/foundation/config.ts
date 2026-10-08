@@ -51,7 +51,7 @@ function check(spec: Spec, v: unknown, path: string, issues: string[]): void {
       if (!isObj(v)) { issues.push(`${path}: expected object`); return; }
       for (const k of Object.keys(v)) {
         if (FORBIDDEN_KEYS.has(k)) { issues.push(`${path}.${k}: forbidden key`); continue; }
-        if (path !== "$.secretRefs" && SECRET_KEY_PATTERN.test(k)) issues.push(`${path}.${k}: secret-like key not allowed in configuration; use secretRefs`);
+        if (!(path === "$" && k === "secretRefs") && path !== "$.secretRefs" && SECRET_KEY_PATTERN.test(k)) issues.push(`${path}.${k}: secret-like key not allowed in configuration; use secretRefs`);
       }
       if (spec.t === "rec") { for (const [k, x] of Object.entries(v)) check(spec.value, x, `${path}.${k}`, issues); return; }
       for (const k of Object.keys(v)) if (!(k in spec.fields)) issues.push(`${path}.${k}: unknown key`);
