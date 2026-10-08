@@ -1,0 +1,12 @@
+# AGENTS.md — Mosaic technical rules
+- Runtime is Node.js >=22.18 running TypeScript via native type stripping; only erasable TS syntax is used (no enums/namespaces/param properties), so there's no build step and no runtime deps.
+- Tests use the built-in `node:test` runner (`npm test`) so the test toolchain adds no dependencies.
+- Layer import rules are enforced by tests/architecture/dependency-rules.test.ts; edit ALLOWED there and docs/ARCHITECTURE.md together.
+- contracts/ imports nothing; it's the only home for shared types and identifiers, so there's one source of truth.
+- trading/ imports contracts/ only, and nothing imports trading/, which keeps the Trading Satellite isolated.
+- Every capability has exactly one owning module (ModuleDescriptor.owns); orderModules rejects duplicate authority.
+- Configuration is immutable JSON in config/ and holds secret references only (env:// or vault://); values come in through a SecretProvider and are wrapped in Secret, which is redacted when serialized.
+- No global mutable state: dependencies go through ModuleContext, and lifecycle state lives on the Lifecycle instance.
+- Primary database decision: PostgreSQL (not provisioned yet); cache is not authoritative.
+- Do not scaffold a frontend; Mosaic Core is headless.
+- `npm run dev` starts a headless JSON health endpoint (apps/dev-health) on PORT (default 8080) because the hosting preview needs a long-running dev process; it's not a UI or a production API.
