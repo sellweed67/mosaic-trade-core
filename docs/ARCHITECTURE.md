@@ -81,3 +81,12 @@ Incompatible versions do not silently communicate (major mismatch means incompat
 - ID generation is UUIDv4 for now; it may change to UUIDv7/ULID in Phase 02. Reversible.
 - PostgreSQL is the chosen primary DB but isn't provisioned. Cache tech is undecided (in-process first).
 - Inter-module dependency edges in descriptors are provisional.
+
+## 12. Phase 01 — Foundation (implemented)
+- Lifecycle: the only legal transitions are in `LIFECYCLE_TRANSITIONS`. Each module's startup has a time limit (`timeouts.startupMs`); if startup fails, already-started modules are stopped in reverse order. Shutdown runs in reverse order within a total time budget (`timeouts.shutdownMs`), and calling it twice is safe. SIGINT/SIGTERM trigger a graceful stop; a second signal forces exit.
+- Config: strict schema (unknown keys, types and ranges all rejected, every issue reported together), deep-frozen. Layers: `default.json` < `<env>.json` < `MOSAIC_CONFIG__a__b` env overrides. Only secret references are allowed.
+- Secrets: `env://MOSAIC_SECRET_*` resolved through a SecretProvider into a redacting `Secret`.
+- Logging: level filtering; trace IDs propagate across async calls (AsyncLocalStorage); secrets are scrubbed automatically by key name and by value pattern.
+- Errors: DomainError / SystemError / ContractError, each with `is_retryable` and `requires_reconciliation`; fail-closed categories can never be retried.
+- Health: liveness, readiness (unknown or unhealthy means not ready), per-module checks with timeouts.
+- Registry: deterministic topological order, cycle and missing-dependency detection, one owner per capability.
