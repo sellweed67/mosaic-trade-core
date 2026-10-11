@@ -1,11 +1,10 @@
 import { SystemError } from "./errors.ts";
+import { isSecretRef, type SecretRef } from "../../contracts/index.ts";
+export { SECRET_REF_PATTERN, isSecretRef, type SecretRef } from "../../contracts/index.ts";
 /**
  * Secrets boundary. Owner: POLICY & SECURITY (secret management); the interface lives in FOUNDATION
  * so bootstrap can wire a provider. Configuration holds only REFERENCES, never values.
  */
-export type SecretRef = `env://${string}` | `vault://${string}`;
-export const SECRET_REF_PATTERN = /^(env|vault):\/\/[A-Za-z0-9_./-]+$/;
-export function isSecretRef(v: unknown): v is SecretRef { return typeof v === "string" && SECRET_REF_PATTERN.test(v); }
 
 /** Opaque wrapper: never serializes, stringifies or inspects to its value. */
 export class Secret {

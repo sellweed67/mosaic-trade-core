@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { TraceContext } from "../../contracts/index.ts";
+import { SENSITIVE_KEY_PATTERN, scrubSensitive, type TraceContext } from "../../contracts/index.ts";
 
 /**
  * Structured logging boundary. Owner: FOUNDATION (logger API); OBSERVABILITY owns sinks/export later.
@@ -25,20 +25,9 @@ export interface Logger {
   child(ctx: LogContext): Logger;
 }
 
-const SECRET_KEY = /(pass(word|wd)?|token|api[_-]?key|secret|credential|authorization|cookie|private[_-]?key)/i;
-const SECRET_VALUE_PATTERNS: readonly RegExp[] = [
-  /\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi,
-  /\bsk-[A-Za-z0-9_-]{8,}/g,
-  /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,
-  /\bAKIA[0-9A-Z]{16}\b/g,
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
-  /((?:password|passwd|token|secret|api[_-]?key)\s*[=:]\s*)[^\s&,;"']+/gi,
-];
-export function scrubString(s: string): string {
-  let out = s;
-  for (const p of SECRET_VALUE_PATTERNS) out = out.replace(p, (_m, g1) => (typeof g1 === "string" ? `${g1}[REDACTED]` : "[REDACTED]"));
-  return out;
-}
+const SECRET_KEY = SENSITIVE_KEY_PATTERN;
+/** Scrubs secret-looking substrings. Delegates to the canonical contracts/sensitive.ts definition. */
+export function scrubString(s: string): string { return scrubSensitive(s); }
 /** Deep-copies a value with secret keys and secret-looking strings redacted. Handles cycles and Errors. */
 export function redact(v: unknown, depth = 0, seen: WeakSet<object> = new WeakSet()): unknown {
   if (typeof v === "string") return scrubString(v);

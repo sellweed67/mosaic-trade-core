@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { Environment } from "./environment.ts";
 import { isSecretRef, type SecretRef } from "./secrets.ts";
 import { SystemError } from "./errors.ts";
+import { SENSITIVE_KEY_PATTERN } from "../../contracts/index.ts";
 import { LOG_LEVELS, type LogLevel } from "./logging.ts";
 
 /** Configuration (non-secret, deeply frozen after load). Owner: FOUNDATION. Never runtime state. */
@@ -37,7 +38,7 @@ export const CONFIG_SCHEMA: Spec = {
   },
 };
 
-const SECRET_KEY_PATTERN = /(pass(word|wd)?|token|api[_-]?key|secret|credential|private[_-]?key)/i;
+const SECRET_KEY_PATTERN = SENSITIVE_KEY_PATTERN;
 const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
