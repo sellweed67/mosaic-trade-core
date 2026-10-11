@@ -10,3 +10,4 @@
 - Primary database decision: PostgreSQL (not provisioned yet); cache is not authoritative.
 - Do not scaffold a frontend; Mosaic Core is headless.
 - `npm run dev` starts a headless JSON health endpoint (apps/dev-health) on PORT (default 8080) because the hosting preview needs a long-running dev process; it's not a UI or a production API.
+- Universal contracts (envelope, contexts, retry, idempotency, sensitive-data patterns, SecretRef) live only in contracts/; core re-exports them and never redefines them.

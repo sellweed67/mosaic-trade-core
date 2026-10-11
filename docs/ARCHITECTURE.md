@@ -90,3 +90,9 @@ Incompatible versions do not silently communicate (major mismatch means incompat
 - Errors: DomainError / SystemError / ContractError, each with `is_retryable` and `requires_reconciliation`; fail-closed categories can never be retried.
 - Health: liveness, readiness (unknown or unhealthy means not ready), per-module checks with timeouts.
 - Registry: deterministic topological order, cycle and missing-dependency detection, one owner per capability.
+
+## 13. Phase 02 — Universal Contracts & Protocol (implemented)
+- Lifecycle uses five states: created, starting, running, stopping, stopped. A failed startup goes starting -> stopping -> stopped and reports the original error with `details.rollback` attached. stopped -> starting allows a clean restart.
+- Envelope (`contracts/envelope.ts`) supports COMMAND, REQUEST, RESPONSE, EVENT, RESULT and ERROR. Unknown fields are rejected. Metadata is flat, can't carry secrets and is never read as control. The payload must be JSON-safe and is scanned for secret-looking values. Contract version 1.0.
+- Contexts (`contracts/context.ts`, `policy.ts`, `retry.ts`, `idempotency.ts`) are types plus validation only. Authorization fails closed. Policy precedence is deterministic and conflicts are reported. A retry decision is a pure function, and an unknown external outcome always means reconcile. Idempotency follows a state machine.
+- Not implemented: an authentication or authorization service, a policy engine, a retry scheduler, or an idempotency store.
