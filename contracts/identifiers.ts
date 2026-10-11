@@ -19,6 +19,13 @@ export const IDENTIFIER_NAMES = [
 ] as const;
 export type IdentifierName = (typeof IDENTIFIER_NAMES)[number];
 
+/**
+ * Canonical identifier syntax for every Mosaic ID: 1–128 chars, alphanumeric start, then [A-Za-z0-9._:-].
+ * UUIDs, ULIDs and namespaced IDs fit. IDs are opaque: never parsed for meaning.
+ */
+export const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+export function isIdentifier(v: unknown): v is string { return typeof v === "string" && IDENTIFIER_PATTERN.test(v); }
+
 /** Trace context every future component must be able to carry. */
 export interface TraceContext {
   readonly request_id?: RequestId;

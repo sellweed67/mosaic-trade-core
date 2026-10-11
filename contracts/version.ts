@@ -4,4 +4,4 @@ export interface ContractVersion { readonly major: number; readonly minor: numbe
 export function isCompatible(local: ContractVersion, remote: ContractVersion): boolean {
   return local.major === remote.major && remote.minor <= local.minor;
 }
-export const CONTRACTS_VERSION: ContractVersion = Object.freeze({ major: 0, minor: 0 });
+export const CONTRACTS_VERSION: ContractVersion = Object.freeze({ major: 1, minor: 0 });
