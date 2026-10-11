@@ -35,6 +35,9 @@ const RETRYABLE_BY_DEFAULT: ReadonlySet<ErrorCategory> = new Set(["timeout", "un
 /** Categories that may never be retried automatically (fail closed). */
 const NEVER_RETRY: ReadonlySet<ErrorCategory> = new Set(["policy_denied", "security", "incompatible_version", "contract_violation", "unknown_external_state", "configuration"]);
 
+/** True for categories that must never be retried automatically. */
+export function isRetryForbiddenCategory(category: ErrorCategory): boolean { return NEVER_RETRY.has(category); }
+
 export function mosaicError(code: string, category: ErrorCategory, message: string, extra: ErrorExtra = {}): MosaicError {
   const requires_reconciliation = category === "unknown_external_state" || extra.requires_reconciliation === true;
   const is_retryable = requires_reconciliation || NEVER_RETRY.has(category) ? false : (extra.retryable ?? RETRYABLE_BY_DEFAULT.has(category));
