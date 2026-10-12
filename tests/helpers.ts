@@ -3,6 +3,7 @@ export const baseRawConfig = {
   featureFlags: {}, timeouts: { defaultMs: 200, startupMs: 200, shutdownMs: 200 },
   retry: { maxAttempts: 3, baseDelayMs: 10, maxDelayMs: 100 }, resourceLimits: { maxConcurrentTasks: 2 },
   logging: { level: "debug" }, secretRefs: {},
+  dispatch: { maxInFlight: 4, maxDepth: 3, handlerTimeoutMs: 100, maxIdempotencyEntries: 3 },
 };
 export function testConfig(over: Partial<Record<keyof typeof baseRawConfig, unknown>> = {}): MosaicConfig {
   return validateConfig({ ...structuredClone(baseRawConfig), ...over }, "test");
