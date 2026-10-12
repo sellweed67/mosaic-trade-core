@@ -2,4 +2,5 @@
 - [x] Phase 00-B — Repository bootstrap
 - [x] Phase 01 — Foundation
 - [x] Phase 02 — Universal Contracts & Protocol
-- [ ] Phase 03 — awaiting instruction
+- [x] Phase 03 — Core Runtime & Module Isolation
+- [ ] Phase 04 — awaiting instruction

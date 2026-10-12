@@ -18,7 +18,8 @@ const server = createServer(async (req, res) => {
   const send = (code: number, body: unknown) => res.writeHead(code, { "content-type": "application/json" }).end(JSON.stringify(body));
   if (req.url === "/health/live") { const l = lifecycle.liveness(); return send(l.live ? 200 : 503, l); }
   if (req.url === "/health/ready") { const r = await lifecycle.readiness(); return send(r.ready ? 200 : 503, r); }
-  return send(200, { service: "mosaic-core", state: lifecycle.state, version: versionInfo, endpoints: ["/health/live", "/health/ready"] });
+  if (req.url === "/health/diagnostics") return send(200, lifecycle.diagnostics());
+  return send(200, { service: "mosaic-core", state: lifecycle.state, version: versionInfo, endpoints: ["/health/live", "/health/ready", "/health/diagnostics"] });
 }).listen(port, "0.0.0.0");
 
 installSignalHandlers(lifecycle, {

@@ -4,5 +4,6 @@
   "retry": { "maxAttempts": 3, "baseDelayMs": 200, "maxDelayMs": 5000 },
   "resourceLimits": { "maxConcurrentTasks": 4 },
   "logging": { "level": "info" },
+  "dispatch": { "maxInFlight": 64, "maxDepth": 8, "handlerTimeoutMs": 5000, "maxIdempotencyEntries": 10000 },
   "secretRefs": {}
 }

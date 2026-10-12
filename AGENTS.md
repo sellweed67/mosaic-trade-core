@@ -11,3 +11,4 @@
 - Do not scaffold a frontend; Mosaic Core is headless.
 - `npm run dev` starts a headless JSON health endpoint (apps/dev-health) on PORT (default 8080) because the hosting preview needs a long-running dev process; it's not a UI or a production API.
 - Universal contracts (envelope, contexts, retry, idempotency, sensitive-data patterns, SecretRef) live only in contracts/; core re-exports them and never redefines them.
+- In-process dispatch, capability grants and the command idempotency ledger live in core/runtime/ and are owned by the single Lifecycle instance; grants come only from the composition root (bootstrap options), never from module descriptors.

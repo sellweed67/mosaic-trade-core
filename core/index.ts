@@ -10,3 +10,5 @@ export * from "./foundation/lifecycle.ts";
 export * from "./foundation/signals.ts";
 export * from "./foundation/bootstrap.ts";
 export * from "./foundation/version.ts";
+export * from "./runtime/capabilities.ts";
+export type { DispatchStats, DispatchLimits } from "./runtime/dispatcher.ts";

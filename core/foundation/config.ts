@@ -14,6 +14,8 @@ export interface MosaicConfig {
   readonly retry: { readonly maxAttempts: number; readonly baseDelayMs: number; readonly maxDelayMs: number };
   readonly resourceLimits: { readonly maxConcurrentTasks: number };
   readonly logging: { readonly level: LogLevel };
+  /** In-process dispatch bounds (Phase 03). */
+  readonly dispatch: { readonly maxInFlight: number; readonly maxDepth: number; readonly handlerTimeoutMs: number; readonly maxIdempotencyEntries: number };
   /** Secret references only — never secret values. */
   readonly secretRefs: Readonly<Record<string, SecretRef>>;
 }
@@ -34,6 +36,7 @@ export const CONFIG_SCHEMA: Spec = {
     retry: { t: "obj", fields: { maxAttempts: { t: "int", min: 1, max: 20 }, baseDelayMs: { t: "int", min: 0, max: 600_000 }, maxDelayMs: { t: "int", min: 0, max: 600_000 } } },
     resourceLimits: { t: "obj", fields: { maxConcurrentTasks: { t: "int", min: 1, max: 100_000 } } },
     logging: { t: "obj", fields: { level: { t: "enum", values: LOG_LEVELS } } },
+    dispatch: { t: "obj", fields: { maxInFlight: { t: "int", min: 1, max: 10_000 }, maxDepth: { t: "int", min: 1, max: 64 }, handlerTimeoutMs: ms, maxIdempotencyEntries: { t: "int", min: 1, max: 1_000_000 } } },
     secretRefs: { t: "rec", value: { t: "secretRef" } },
   },
 };
