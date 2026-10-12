@@ -1,8 +1,8 @@
 import type { ModuleDescriptor } from "../../core/index.ts";
-/** core-runtime module. RESERVED boundary — no functionality implemented in Phase 00-B. */
+/** core-runtime module. RESERVED boundary — descriptor only. "internal-dispatch" is implemented in core/runtime (Phase 03). */
 export const module: ModuleDescriptor = {
   id: "core-runtime",
-  owns: ["task-execution", "workflow-engine", "event-bus", "queue", "scheduling"],
+  owns: ["internal-dispatch", "task-execution", "workflow-engine", "event-bus", "queue", "scheduling"],
   dependsOn: ["foundation"],
   status: "reserved",
 };
