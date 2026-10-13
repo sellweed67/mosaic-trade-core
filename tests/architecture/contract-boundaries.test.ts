@@ -17,7 +17,7 @@ test("no trading/broker/MT5/provider/messaging SDK terms in the universal contra
   assert.deepEqual(bad.map((f) => relative(ROOT, f)), []);
 });
 test("canonical definitions exist exactly once", () => {
-  for (const name of ["MESSAGE_TYPES", "MessageEnvelope", "POLICY_PRECEDENCE", "SecretRef", "SECRET_REF_PATTERN", "IDENTIFIER_PATTERN", "LIFECYCLE_TRANSITIONS", "RetryPolicy", "IdempotencyState", "SENSITIVE_VALUE_PATTERNS"]) {
+  for (const name of ["MESSAGE_TYPES", "MessageEnvelope", "POLICY_PRECEDENCE", "SecretRef", "SECRET_REF_PATTERN", "IDENTIFIER_PATTERN", "LIFECYCLE_TRANSITIONS", "RetryPolicy", "IdempotencyState", "SENSITIVE_VALUE_PATTERNS", "StateStore", "StorageRecord", "StorageTombstone", "STORAGE_KEY_PATTERN"]) {
     const re = new RegExp(`export\\s+(?:const|type|interface|function|class)\\s+${name}\\b`);
     const hits = SRC.filter((f) => re.test(readFileSync(f, "utf8")));
     assert.equal(hits.length, 1, `${name}: ${hits.map((f) => relative(ROOT, f))}`);
@@ -29,4 +29,11 @@ test("no login, user database, OAuth, connector implementation or new runtime de
   assert.equal(pkg.dependencies, undefined);
   assert.deepEqual(files(join(ROOT, "integrations")).map((f) => relative(ROOT, f)), ["integrations/adapter.ts"]);
   assert.deepEqual(files(join(ROOT, "trading")).map((f) => relative(ROOT, f)), ["trading/boundary.ts"]);
+});
+test("storage adapters live only in infrastructure/storage and implement the contract; modules/data stays reserved", () => {
+  const impl = SRC.filter((f) => /implements\s+StateStore\b/.test(readFileSync(f, "utf8"))).map((f) => relative(ROOT, f)).sort();
+  assert.deepEqual(impl, ["infrastructure/storage/in-memory-state-store.ts", "infrastructure/storage/single-process-file-store.ts"]);
+  assert.match(readFileSync(join(ROOT, "modules/data/index.ts"), "utf8"), /status: "reserved"/);
+  const storageImports = [...readFileSync(join(ROOT, "infrastructure/storage/single-process-file-store.ts"), "utf8").matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1]);
+  assert.deepEqual(storageImports.filter((x) => !x!.startsWith(".") && !["node:fs", "node:fs/promises", "node:crypto", "node:path"].includes(x!)), []);
 });
