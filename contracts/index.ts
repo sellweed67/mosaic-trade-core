@@ -13,4 +13,5 @@ export * from "./policy.ts";
 export * from "./retry.ts";
 export * from "./idempotency.ts";
 export * from "./context.ts";
+export * from "./storage.ts";
 export * from "./reserved.ts";
