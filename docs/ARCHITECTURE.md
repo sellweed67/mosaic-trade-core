@@ -104,3 +104,16 @@ Incompatible versions do not silently communicate (major mismatch means incompat
 - **Capabilities** (`core/runtime/capabilities.ts`): deny by default. Grants come only from the composition root. Each decision is a Phase 02 AuthorizationContext checked with `isAuthorized`. An optional `policy` must resolve to allow.
 - **COMMAND idempotency** (`core/runtime/idempotency-ledger.ts`): a bounded, process-local ledger built on the Phase 02 rules. Duplicates are not re-executed. A timeout means `unknown_external_state`, and the command is never retried automatically. Unresolved entries are never evicted.
 - **Limits (not a sandbox):** module boundaries are in-process conventions plus checks. Any code in the process can bypass them. The ledger is lost when the process exits. There is no durable delivery, no cross-process exactly-once, no broadcast, and no reconciliation API yet. If a hung init is abandoned it is told to stop through its signal, but whatever it already acquired can only be released by that module.
+
+## 15. Phase 04 Stage 1 — Storage contract & adapters (implemented)
+- **Contract** (`contracts/storage.ts`): types and validation. `planPut` and `planDelete` are the only CAS logic, and both adapters use them. `put` replaces the whole record. Values and metadata must be JSON-safe and are scanned for secret-looking strings. Versions are safe integers; reaching the maximum returns `storage.version_exhausted`. Tombstones are kept permanently; there is no compaction.
+- **InMemoryStateStore**: not durable. Each operation runs synchronously between awaits, so it is atomic within the process.
+- **SingleProcessFileStore** (`infrastructure/storage/`):
+  - Layout: `process.lock`, plus `records/<sha256(key)>.json`.
+  - All entries are loaded and validated at open, and reads come from that in-memory copy. Writes run one at a time.
+  - Lock: exclusive creation holding a random owner token. It is never broken, and close removes it only if the token still matches.
+  - Commit sequence: temp file in the same directory, fsync, rename, then fsync the directory.
+  - A failure before the rename leaves the stored state unchanged and returns `storage.write_failed`.
+  - A failure during or after the rename "poisons" the store: every further operation returns `storage.durability_unknown` (unknown_external_state) until it is closed and reopened.
+  - Unreadable files, files that don't match the schema, files whose name doesn't match their key, and unexpected files all make open() fail. Nothing is modified. Leftover temp files are kept and counted.
+- **Guarantees are limited.** It's correct only when a single process uses the directory. The lock is a convention, so it can't stop another process that ignores it. Rename is atomic only within one local POSIX filesystem; there are no guarantees on NFS, SMB or FUSE. Durability depends on the OS and disk honouring fsync. If directory fsync is unsupported (for example on Windows), a successful rename may not survive a power loss; this is reported in `diagnostics().directory_fsync_supported`. The whole dataset is held in memory. There is no cross-process or exactly-once guarantee. Recovering from a stale lock and from a poisoned store are manual operator steps. The `hooks` option exists only for fault-injection tests.

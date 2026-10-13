@@ -13,3 +13,4 @@
 - Universal contracts (envelope, contexts, retry, idempotency, sensitive-data patterns, SecretRef) live only in contracts/; core re-exports them and never redefines them.
 - In-process dispatch, capability grants and the command idempotency ledger live in core/runtime/ and are owned by the single Lifecycle instance; grants come only from the composition root (bootstrap options), never from module descriptors.
 - `npm run build` is a type check only (no build output): Node runs the TypeScript directly; the script exists because the hosting build step requires one.
+- Storage CAS/tombstone semantics live only in contracts/storage.ts (planPut/planDelete); adapters in infrastructure/storage/ must delegate to them and never implement unconditional writes.
