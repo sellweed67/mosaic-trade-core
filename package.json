@@ -9,7 +9,8 @@
     "start": "node apps/mosaic-core/main.ts",
     "dev": "node apps/dev-health/server.ts",
     "test": "node --test \"tests/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
   },
   "devDependencies": { "typescript": "^5.9.0", "@types/node": "^22.0.0" }
 }
