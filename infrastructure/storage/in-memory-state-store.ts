@@ -2,7 +2,7 @@
  * In-process StateStore. Not durable: contents vanish with the process.
  * All CAS work happens synchronously between awaits, so each operation is atomic within the event loop.
  */
-import { checkStorageKey, mosaicError, ok, err, planDelete, planPut, type Result, type StateStore, type StorageEntry, type StoragePutInput, type StorageRecord, type StorageTombstone } from "../../contracts/index.ts";
+import { checkStorageKey, mosaicError, ok, err, planDelete, planListKeys, planPut, type ListKeysOptions, type ListKeysResult, type Result, type StateStore, type StorageEntry, type StoragePutInput, type StorageRecord, type StorageTombstone } from "../../contracts/index.ts";
 
 const closedError = () => err(mosaicError("storage.closed", "unavailable", "Store is closed", { retryable: false }));
 
@@ -24,6 +24,10 @@ export class InMemoryStateStore implements StateStore {
   async has(key: string): Promise<Result<boolean>> {
     const r = await this.get(key);
     return r.ok ? ok(r.value !== null) : r;
+  }
+  async listKeys(options?: ListKeysOptions): Promise<Result<ListKeysResult>> {
+    if (this.#closed) return closedError();
+    return planListKeys(this.#entries.values(), options);
   }
   async put(input: StoragePutInput, expectedVersion: number): Promise<Result<StorageRecord>> {
     if (this.#closed) return closedError();

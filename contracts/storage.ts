@@ -49,6 +49,8 @@ export interface StateStore {
   delete(key: string, expectedVersion: number): Promise<Result<StorageTombstone>>;
   /** True only if an active record exists. */
   has(key: string): Promise<Result<boolean>>;
+  /** Paginated active keys (tombstones excluded). See planListKeys for ordering and cursor semantics. */
+  listKeys(options?: ListKeysOptions): Promise<Result<ListKeysResult>>;
   close(): Promise<void>;
 }
 
@@ -146,4 +148,54 @@ export function serializeStorageEntry(e: StorageEntry): string {
     key: e.key, value: e.value, version: e.version, status: e.status, created_at: e.created_at, updated_at: e.updated_at,
     ...(e.etag !== undefined ? { etag: e.etag } : {}), ...(e.metadata !== undefined ? { metadata: e.metadata } : {}),
   });
+}
+
+/** Key listing (Phase 04 Stage 2, Increment 2.1). */
+export const DEFAULT_LIST_KEYS_LIMIT = 50;
+export const MAX_LIST_KEYS_LIMIT = 250;
+export const STORAGE_KEY_PREFIX_PATTERN = /^[a-zA-Z0-9_.:-]{0,256}$/;
+export interface ListKeysOptions {
+  /** Only keys starting with this prefix (applied before pagination). Empty or omitted = all keys. */
+  readonly prefix?: string;
+  /** Page size, integer 1..MAX_LIST_KEYS_LIMIT. Default DEFAULT_LIST_KEYS_LIMIT. */
+  readonly limit?: number;
+  /** Exclusive lower bound: only keys strictly greater than this (same ordering as results). */
+  readonly cursor?: string;
+}
+export interface ListKeysResult {
+  /** Active keys only, ascending UTF-16 code-unit order (equals byte order for the ASCII key alphabet). */
+  readonly keys: readonly string[];
+  /** Present only when more matching keys exist; pass as cursor for the next page. */
+  readonly next_cursor?: string;
+}
+
+/**
+ * Pure listing planner shared by every adapter, so ordering, filtering and paging are identical.
+ * The returned page is O(limit); the scan itself is O(n) over the adapter's in-memory entries
+ * (both current adapters keep all entries in memory, so total adapter memory is NOT O(limit)).
+ */
+export function planListKeys(entries: Iterable<StorageEntry>, options?: ListKeysOptions): Result<ListKeysResult> {
+  const issues: ContractIssue[] = [];
+  const o: Record<string, unknown> = options === undefined ? {} : (options as unknown as Record<string, unknown>);
+  if (!isPlainObject(o)) issues.push({ path: "$", rule: "expected_object" });
+  else {
+    checkAllowedKeys(o, ["prefix", "limit", "cursor"], "$", issues);
+    if (o.prefix !== undefined && (typeof o.prefix !== "string" || !STORAGE_KEY_PREFIX_PATTERN.test(o.prefix))) issues.push({ path: "$.prefix", rule: "invalid_format" });
+    if (o.limit !== undefined && (!Number.isSafeInteger(o.limit) || (o.limit as number) < 1 || (o.limit as number) > MAX_LIST_KEYS_LIMIT)) issues.push({ path: "$.limit", rule: `integer_1_to_${MAX_LIST_KEYS_LIMIT}` });
+    if (o.cursor !== undefined && !isStorageKey(o.cursor)) issues.push({ path: "$.cursor", rule: "invalid_format" });
+  }
+  if (issues.length) return err(contractFailure("storage.invalid_input", "Storage listKeys", issues));
+  const prefix = (o.prefix as string | undefined) ?? "";
+  const limit = (o.limit as number | undefined) ?? DEFAULT_LIST_KEYS_LIMIT;
+  const cursor = o.cursor as string | undefined;
+  const matching: string[] = [];
+  for (const e of entries) {
+    if (e.status !== "active" || !e.key.startsWith(prefix)) continue;
+    if (cursor !== undefined && !(e.key > cursor)) continue;
+    matching.push(e.key);
+  }
+  matching.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const keys = matching.slice(0, limit);
+  const result: ListKeysResult = matching.length > limit ? { keys, next_cursor: keys[keys.length - 1]! } : { keys };
+  return ok(deepFreeze(result));
 }

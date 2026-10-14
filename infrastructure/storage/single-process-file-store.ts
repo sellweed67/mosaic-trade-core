@@ -17,8 +17,8 @@ import { mkdir, open, readdir, readFile, rename, unlink } from "node:fs/promises
 import { createHash, randomBytes } from "node:crypto";
 import { join, resolve } from "node:path";
 import {
-  checkStorageKey, mosaicError, ok, err, planDelete, planPut, serializeStorageEntry, validateStorageEntry,
-  type MosaicError, type Result, type StateStore, type StorageEntry, type StoragePutInput, type StorageRecord, type StorageTombstone,
+  checkStorageKey, mosaicError, ok, err, planDelete, planListKeys, planPut, serializeStorageEntry, validateStorageEntry,
+  type ListKeysOptions, type ListKeysResult, type MosaicError, type Result, type StateStore, type StorageEntry, type StoragePutInput, type StorageRecord, type StorageTombstone,
 } from "../../contracts/index.ts";
 import { SystemError } from "../../core/index.ts";
 
@@ -118,6 +118,11 @@ export class SingleProcessFileStore implements StateStore {
   async has(key: string): Promise<Result<boolean>> {
     const r = await this.get(key);
     return r.ok ? ok(r.value !== null) : r;
+  }
+  /** Reads the committed in-memory index (no disk I/O); same planner as every adapter. */
+  async listKeys(options?: ListKeysOptions): Promise<Result<ListKeysResult>> {
+    const u = this.#unusable(); if (u) return u;
+    return planListKeys(this.#entries.values(), options);
   }
   put(input: StoragePutInput, expectedVersion: number): Promise<Result<StorageRecord>> {
     return this.#exclusive(() => {
