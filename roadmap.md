@@ -5,4 +5,7 @@
 - [x] Phase 03 — Core Runtime & Module Isolation
 - [ ] Phase 04 — Durable state
   - [x] Stage 1 — Storage contract & adapters
-  - [ ] Stage 2 — awaiting approval
+  - [ ] Stage 2
+    - [x] 2.1 listKeys
+    - [x] 2.2 canonical fingerprint, durable ledger, recovery (not wired into dispatch)
+    - [ ] 2.3 startup integration — awaiting approval
