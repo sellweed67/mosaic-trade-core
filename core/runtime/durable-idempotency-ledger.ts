@@ -6,7 +6,7 @@
 import { createHash } from "node:crypto";
 import { isIdentifier, isIsoTimestamp, isPlainObject, validateEnvelope, type MessageEnvelope, type MosaicError, type StateStore, type StorageRecord } from "../../contracts/index.ts";
 import { ContractError, DomainError, MosaicFault, SystemError } from "../foundation/errors.ts";
-import { computeFingerprint } from "./canonical-fingerprint.ts";
+import { computeFingerprint, type FingerprintInput } from "./canonical-fingerprint.ts";
 
 export const MIN_RETENTION_MS = 86_400_000;
 export const DEFAULT_RETENTION_MS = 604_800_000;
@@ -102,7 +102,7 @@ export class DurableIdempotencyLedger {
     if (!isPlainObject(options) || typeof options.namespace !== "string" || !SCOPE_PART.test(options.namespace) || typeof options.operation !== "string" || !SCOPE_PART.test(options.operation)) {
       throw new ContractError("idempotency.invalid_scope", "contract_violation", "Invalid idempotency namespace/operation");
     }
-    const fingerprint = computeFingerprint(envelope); // throws contract.invalid_payload; nothing written yet
+    const fingerprint = computeFingerprint(envelope as FingerprintInput); // throws contract.invalid_payload; nothing written yet
     const v = validateEnvelope(envelope);
     if (!v.ok) throw new MosaicFault(v.error);
     const env = v.value;
