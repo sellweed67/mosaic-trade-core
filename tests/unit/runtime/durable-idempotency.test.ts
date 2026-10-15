@@ -60,7 +60,7 @@ test("mismatched fingerprint is a conflict and is checked before the cached resu
   if (c.outcome !== "claimed") throw new Error();
   await ledger.complete(c.key, { status: "success" }, c.version);
   await rejects(ledger.claim(cmd({ q: 2 }), scope), "idempotency.fingerprint_mismatch");
-  const v2 = cmd({ q: 1 }); v2.contract_version = { major: 1, minor: 1 };
+  const v2 = cmd({ q: 1 }); v2.destination = { kind: "module", id: "other" };
   await rejects(ledger.claim(v2, scope), "idempotency.fingerprint_mismatch");
 });
 test("in_progress duplicate is an in-flight conflict", async () => {
