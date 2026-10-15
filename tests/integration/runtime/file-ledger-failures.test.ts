@@ -7,7 +7,12 @@ import { mosaicError, err, type StateStore } from "../../../contracts/index.ts";
 import { DurableIdempotencyLedger } from "../../../core/runtime/durable-idempotency-ledger.ts";
 import { IdempotencyRecovery } from "../../../core/runtime/idempotency-recovery.ts";
 import { tempDir } from "../../storage-helpers.ts";
-import { cmd } from "../../unit/runtime/durable-idempotency.test.ts";
+const T0 = new Date("2026-10-15T00:00:00.000Z");
+const cmd = (payload: unknown = { q: 1 }, key = "k-1") => ({
+  message_id: `m-${Math.random().toString(36).slice(2)}`, correlation_id: "corr-1", source: { kind: "service", id: "app" },
+  destination: { kind: "module", id: "data" }, message_type: "COMMAND", contract_version: { major: 1, minor: 0 },
+  created_at: T0.toISOString(), payload, metadata: {}, idempotency_key: key,
+}) as any;
 
 const scope = { namespace: "data", operation: "write" };
 const ioErr = () => err(mosaicError("storage.io_failure", "unavailable", "injected", { retryable: false }));

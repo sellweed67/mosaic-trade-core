@@ -6,7 +6,7 @@ import {
 } from "../../../core/runtime/durable-idempotency-ledger.ts";
 
 const T0 = new Date("2026-10-15T00:00:00.000Z");
-export const cmd = (payload: unknown = { q: 1 }, key = "k-1") => ({
+const cmd = (payload: unknown = { q: 1 }, key = "k-1") => ({
   message_id: `m-${Math.random().toString(36).slice(2)}`, correlation_id: "corr-1", source: { kind: "service", id: "app" },
   destination: { kind: "module", id: "data" }, message_type: "COMMAND", contract_version: { major: 1, minor: 0 },
   created_at: T0.toISOString(), payload, metadata: {}, idempotency_key: key,
